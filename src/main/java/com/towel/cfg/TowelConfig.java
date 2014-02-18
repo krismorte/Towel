@@ -8,20 +8,21 @@ public class TowelConfig {
 	public static TowelConfig instance;
 
 	public static TowelConfig getInstance() {
-		if (instance == null)
+		if (instance == null) {
 			instance = new TowelConfig();
+		}
 		return instance;
 	}
 
-	public TowelConfig() {
-		locale = Locale.getDefault();
+	private TowelConfig() {
+		locale = new Locale("pt", "BR");
 	}
 
 	public Locale getDefaultLocale() {
 		return locale;
 	}
 
-	public void setLocale(Locale locale) {
+	public void setLocale(final Locale locale) {
 		this.locale = locale;
 	}
 }

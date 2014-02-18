@@ -8,12 +8,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
+import java.util.ResourceBundle;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -54,16 +52,17 @@ public class SelectTable<T> {
 
 	private int selectType;
 
-	public SelectTable(ObjectTableModel<T> model2, List<T> list2) {
+	public SelectTable(final ObjectTableModel<T> model2, final List<T> list2) {
 		this(model2, new ListPaginator<T>(list2), SINGLE);
 	}
 
-	public SelectTable(ObjectTableModel<T> model2, Paginator<T> list2) {
+	public SelectTable(final ObjectTableModel<T> model2,
+			final Paginator<T> list2) {
 		this(model2, list2, SINGLE);
 	}
 
-	public SelectTable(ObjectTableModel<T> model, Paginator<T> list,
-			int selectType) {
+	public SelectTable(final ObjectTableModel<T> model,
+			final Paginator<T> list, final int selectType) {
 		listeners = new ArrayList<ObjectSelectListener>();
 		closableHook = new ArrayList<Closable>();
 
@@ -77,7 +76,7 @@ public class SelectTable<T> {
 
 		selectButton.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(final ActionEvent arg0) {
 				try {
 					updateSelectedObject();
 				} catch (Exception e) {
@@ -89,7 +88,7 @@ public class SelectTable<T> {
 
 		closeButton.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(final ActionEvent arg0) {
 				dispose();
 			}
 		});
@@ -130,7 +129,7 @@ public class SelectTable<T> {
 		return buttons;
 	}
 
-	public void setSize(int width, int height) {
+	public void setSize(final int width, final int height) {
 		pane.setPreferredSize(new Dimension(width, height));
 		pane.setMinimumSize(new Dimension(width, height));
 	}
@@ -139,7 +138,7 @@ public class SelectTable<T> {
 		return table;
 	}
 
-	public void closeOnDispose(Closable close) {
+	public void closeOnDispose(final Closable close) {
 		closableHook.add(close);
 	}
 
@@ -147,45 +146,40 @@ public class SelectTable<T> {
 	private JScrollPane pane;
 
 	public void close() {
-		if (closed)
+		if (closed) {
 			return;
+		}
 		closed = true;
-		for (Closable closable : closableHook)
+		for (Closable closable : closableHook) {
 			closable.close();
-	}
-
-	public void setSelectButtonText(String text) {
-		selectButton.setText(text);
-	}
-
-	public void setCloseButtonText(String text) {
-		closeButton.setText(text);
-	}
-
-	public void setLocale(Locale locale) {
-		InputStream is = getClass().getResourceAsStream(
-				"/res/strings_" + locale.toString() + ".properties");
-		Properties props = new Properties();
-		try {
-			props.load(is);
-			is.close();
-			setOptions(props);
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 
-	private void setOptions(Properties props) {
-		setSelectButtonText(props.getProperty(SELECT_TXT_ATTR));
-		setCloseButtonText(props.getProperty(CLOSE_TXT_ATTR));
+	public void setSelectButtonText(final String text) {
+		selectButton.setText(text);
 	}
 
-	public void setButtonsText(String select, String close) {
+	public void setCloseButtonText(final String text) {
+		closeButton.setText(text);
+	}
+
+	public void setLocale(final Locale locale) {
+		ResourceBundle labels = ResourceBundle.getBundle("strings", locale);
+
+		setOptions(labels);
+	}
+
+	private void setOptions(final ResourceBundle bundle) {
+		setSelectButtonText(bundle.getString(SELECT_TXT_ATTR));
+		setCloseButtonText(bundle.getString(CLOSE_TXT_ATTR));
+	}
+
+	public void setButtonsText(final String select, final String close) {
 		setSelectButtonText(select);
 		setCloseButtonText(close);
 	}
 
-	public void addObjectSelectListener(ObjectSelectListener listener) {
+	public void addObjectSelectListener(final ObjectSelectListener listener) {
 		listeners.add(listener);
 	}
 
@@ -193,7 +187,7 @@ public class SelectTable<T> {
 		return content;
 	}
 
-	public void showModal(Component parent) {
+	public void showModal(final Component parent) {
 		try {
 			final JDialog dialog = ModalWindow.createDialog(parent,
 					getContent(), "Select");
@@ -215,7 +209,7 @@ public class SelectTable<T> {
 		showSelectTable("Select");
 	}
 
-	public void showSelectTable(String title) {
+	public void showSelectTable(final String title) {
 		frame = new JFrame(title);
 		frame.setContentPane(content);
 		frame.pack();
@@ -231,12 +225,13 @@ public class SelectTable<T> {
 		});
 	}
 
-	private void notifyListeners(SelectEvent evt) {
-		for (ObjectSelectListener listener : listeners)
+	private void notifyListeners(final SelectEvent evt) {
+		for (ObjectSelectListener listener : listeners) {
 			listener.notifyObjectSelected(evt.clone());
+		}
 	}
 
-	public void setSelectionType(int selectType) {
+	public void setSelectionType(final int selectType) {
 		this.selectType = selectType;
 		table.setSelectionMode(this.selectType == SINGLE ? ListSelectionModel.SINGLE_SELECTION
 				: ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -267,22 +262,26 @@ public class SelectTable<T> {
 		container.add(next);
 		container.add(last);
 		first.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
 				firstResult();
 			}
 		});
 		previous.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
 				previousResult();
 			}
 		});
 		next.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
 				nextResult();
 			}
 		});
 		last.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
 				lastResult();
 			}
 		});
@@ -336,12 +335,13 @@ public class SelectTable<T> {
 		int[] realIdx = filter == null ? objIndex : filter
 				.getModelRows(objIndex);
 
-		if (objIndex.length == 1)
+		if (objIndex.length == 1) {
 			notifyListeners(new SelectEvent(this, model.getValue(realIdx[0])));
-		else {
+		} else {
 			List<T> selected = new ArrayList<T>();
-			for (int i : realIdx)
+			for (int i : realIdx) {
 				selected.add(model.getValue(i));
+			}
 			notifyListeners(new SelectEvent(this, selected));
 		}
 		dispose();
@@ -352,7 +352,8 @@ public class SelectTable<T> {
 	}
 
 	private class SelectionListener extends MouseAdapter {
-		public void mouseClicked(MouseEvent e) {
+		@Override
+		public void mouseClicked(final MouseEvent e) {
 			if (e.getClickCount() == 2) {
 				updateSelectedObject();
 				dispose();
@@ -364,7 +365,7 @@ public class SelectTable<T> {
 		return model;
 	}
 
-	public void setFont(Font font) {
+	public void setFont(final Font font) {
 		table.setFont(font);
 	}
 

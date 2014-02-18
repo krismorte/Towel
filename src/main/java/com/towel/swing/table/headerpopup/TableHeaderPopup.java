@@ -29,198 +29,189 @@ import javax.swing.table.TableModel;
 /**
  * @author Vinicius Godoy
  */
-public class TableHeaderPopup
-{
-    protected EventListenerList listenerList = new EventListenerList();
+public class TableHeaderPopup {
+	protected EventListenerList listenerList = new EventListenerList();
 
-    private JTableHeader header = null;
-    protected List<HeaderPopup> popups = null;
-    private TableModel model = null;
-    private int selected = -1;
-    private Map<Integer, Boolean> modified;
+	private JTableHeader header = null;
+	protected List<HeaderPopup> popups = null;
+	private TableModel model = null;
+	private int selected = -1;
+	private final Map<Integer, Boolean> modified;
 
-    public TableHeaderPopup(JTableHeader header, TableModel model)
-    {
-        this.header = header;
-        this.model = model;
+	public TableHeaderPopup(final JTableHeader header, final TableModel model) {
+		this.header = header;
+		this.model = model;
 
-        this.modified = new HashMap<Integer, Boolean>();
+		this.modified = new HashMap<Integer, Boolean>();
 
-        createPopups();
-        modifyHeader();
-    }
+		createPopups();
+		modifyHeader();
+	}
 
-    private void createPopups()
-    {
-        popups = new ArrayList<HeaderPopup>();
-        for (int i = 0; i < model.getColumnCount(); i++)
-        {
-            HeaderPopup headerPopup = new HeaderPopup(header, i);
-            headerPopup.addPopupMenuListener(new PopupMenuListener()
-            {
+	private void createPopups() {
+		popups = new ArrayList<HeaderPopup>();
+		for (int i = 0; i < model.getColumnCount(); i++) {
+			HeaderPopup headerPopup = new HeaderPopup(header, i);
+			headerPopup.addPopupMenuListener(new PopupMenuListener() {
 
-                public void popupMenuCanceled(PopupMenuEvent e)
-                {
-                    selected = -1;
-                    header.invalidate();
-                    header.repaint();
-                }
+				@Override
+				public void popupMenuCanceled(final PopupMenuEvent e) {
+					selected = -1;
+					header.invalidate();
+					header.repaint();
+				}
 
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e)
-                {
-                    selected = -1;
-                    header.invalidate();
-                    header.repaint();
-                }
+				@Override
+				public void popupMenuWillBecomeInvisible(final PopupMenuEvent e) {
+					selected = -1;
+					header.invalidate();
+					header.repaint();
+				}
 
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e)
-                {
-                    header.invalidate();
-                    header.repaint();
-                }
-            });
+				@Override
+				public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
+					header.invalidate();
+					header.repaint();
+				}
+			});
 
-            popups.add(headerPopup);
-        }
-    }
+			popups.add(headerPopup);
+		}
+	}
 
-    public void modifyHeader()
-    {
-        if (header.getDefaultRenderer() instanceof FilteredHeaderRenderer)
-        {
-            header.setDefaultRenderer(new FilteredHeaderRenderer(
-                    ((FilteredHeaderRenderer)header.getDefaultRenderer()).getRenderer()));
-        }
-        else
-        {
-            header.setDefaultRenderer(new FilteredHeaderRenderer(
-                    header.getDefaultRenderer()));
-        }
-        
-        header.addMouseListener(new MouseAdapter()
-        {
-            @Override
-            public void mouseClicked(MouseEvent e)
-            {
-                if (e.getButton() == MouseEvent.BUTTON1)
-                {
-                    int columnIndex = header.columnAtPoint(e.getPoint());
+	public void modifyHeader() {
+		if (header.getDefaultRenderer() instanceof FilteredHeaderRenderer) {
+			header.setDefaultRenderer(new FilteredHeaderRenderer(
+					((FilteredHeaderRenderer) header.getDefaultRenderer())
+							.getRenderer()));
+		} else {
+			header.setDefaultRenderer(new FilteredHeaderRenderer(header
+					.getDefaultRenderer()));
+		}
 
-                    if (columnIndex == -1)
-                        return;
+		header.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(final MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					int columnIndex = header.columnAtPoint(e.getPoint());
 
-                    int modelIndex = header.getColumnModel().getColumn(
-                            columnIndex).getModelIndex();
+					if (columnIndex == -1) {
+						return;
+					}
 
-                    if (popups.get(modelIndex).isEmpty())
-                        return;
+					int modelIndex = header.getColumnModel()
+							.getColumn(columnIndex).getModelIndex();
 
-                    Rectangle rect = header.getHeaderRect(columnIndex);
-                    rect.x = rect.x + rect.width - 17;
-                    rect.width = 16;
+					if (popups.get(modelIndex).isEmpty()) {
+						return;
+					}
 
-                    rect.y = rect.y + rect.height - 17;
-                    rect.height = 16;
+					Rectangle rect = header.getHeaderRect(columnIndex);
+					rect.x = rect.x + rect.width - 17;
+					rect.width = 16;
 
-                    if (!rect.contains(e.getPoint()))
-                        return;
+					rect.y = rect.y + rect.height - 17;
+					rect.height = 16;
 
-                    fireHeaderButtonClicked(modelIndex);
-                    
-                    popups.get(modelIndex).show(columnIndex);
-                    selected = columnIndex;
-                }
-            }
-        });
-    }
+					if (!rect.contains(e.getPoint())) {
+						return;
+					}
 
-    private class FilteredHeaderRenderer implements TableCellRenderer
-    {
-        private TableCellRenderer renderer;
+					fireHeaderButtonClicked(modelIndex);
 
-        public FilteredHeaderRenderer(TableCellRenderer renderer)
-        {
-            this.renderer = renderer;
-        }
+					popups.get(modelIndex).show(columnIndex);
+					selected = columnIndex;
+				}
+			}
+		});
+	}
 
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus, int row,
-                int column)
-        {
-            Component c = renderer.getTableCellRendererComponent(table, value,
-                    isSelected, hasFocus, row, column);
+	private class FilteredHeaderRenderer implements TableCellRenderer {
+		private final TableCellRenderer renderer;
 
-            if (!(c instanceof JLabel))
-                return c;
+		public FilteredHeaderRenderer(final TableCellRenderer renderer) {
+			this.renderer = renderer;
+		}
 
-            int modelIndex = header.getColumnModel().getColumn(column).getModelIndex();
-            if (popups.get(modelIndex).isEmpty())
-                return c;
+		@Override
+		public Component getTableCellRendererComponent(final JTable table,
+				final Object value, final boolean isSelected,
+				final boolean hasFocus, final int row, final int column) {
+			Component c = renderer.getTableCellRendererComponent(table, value,
+					isSelected, hasFocus, row, column);
 
-            JLabel label = (JLabel) c;
+			if (!(c instanceof JLabel)) {
+				return c;
+			}
 
-            GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.weightx = 1.0;
+			int modelIndex = header.getColumnModel().getColumn(column)
+					.getModelIndex();
+			if (popups.get(modelIndex).isEmpty()) {
+				return c;
+			}
 
-            JPanel panel = new JPanel();
-            panel.setLayout(new GridBagLayout());
-            panel.add(c, gridBagConstraints);
+			JLabel label = (JLabel) c;
 
-            JToggleButton button = new JToggleButton();
+			GridBagConstraints gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints.weightx = 1.0;
 
-            if (modified.get(modelIndex) == null || !modified.get(modelIndex))
-                button.setIcon(new ImageIcon(getClass().getResource(
-                        "/res/gui/down.gif")));
-            else
-                button.setIcon(new ImageIcon(getClass().getResource(
-                        "/res/gui/down_red.gif")));
+			JPanel panel = new JPanel();
+			panel.setLayout(new GridBagLayout());
+			panel.add(c, gridBagConstraints);
 
-            button.setPreferredSize(new Dimension(16, 16));
-            button.setMaximumSize(new Dimension(16, 16));
-            button.setMinimumSize(new Dimension(16, 16));
-            button.setFocusable(false);
-            button.setSelected(column == selected);
+			JToggleButton button = new JToggleButton();
 
-            panel.add(button, new GridBagConstraints());
+			if (modified.get(modelIndex) == null || !modified.get(modelIndex)) {
+				button.setIcon(new ImageIcon(getClass().getResource(
+						"/images/down.gif")));
+			} else {
+				button.setIcon(new ImageIcon(getClass().getResource(
+						"/images/down_red.gif")));
+			}
 
-            Border border = UIManager.getBorder("TableHeader.cellBorder");
-            border.getBorderInsets(null).set(0, 2, 1, 1);
-            panel.setBorder(label.getBorder());
-            label.setBorder(null);
+			button.setPreferredSize(new Dimension(16, 16));
+			button.setMaximumSize(new Dimension(16, 16));
+			button.setMinimumSize(new Dimension(16, 16));
+			button.setFocusable(false);
+			button.setSelected(column == selected);
 
-            return panel;
-        }
+			panel.add(button, new GridBagConstraints());
 
-        public TableCellRenderer getRenderer()
-        {
-            return renderer;
-        }
-    }
+			Border border = UIManager.getBorder("TableHeader.cellBorder");
+			border.getBorderInsets(null).set(0, 2, 1, 1);
+			panel.setBorder(label.getBorder());
+			label.setBorder(null);
 
-    public HeaderPopup getPopup(int modelIndex)
-    {
-        return popups.get(modelIndex);
-    }
+			return panel;
+		}
 
-    public void setModified(int modelIndex, boolean value)
-    {
-        modified.put(modelIndex, value);
-    }
+		public TableCellRenderer getRenderer() {
+			return renderer;
+		}
+	}
 
-    public void addButtonListener(HeaderButtonListener l)
-    {
-        listenerList.add(HeaderButtonListener.class, l);
-    }
-    
-    protected void fireHeaderButtonClicked(int modelIndex) {
-        Object[] listeners = listenerList.getListenerList();
-        HeaderPopupEvent e=null;
-        for (int i = listeners.length-2; i>=0; i-=2) {
-            if (listeners[i]==HeaderButtonListener.class) {
-                if (e == null)
-                    e = new HeaderPopupEvent(this, modelIndex);
-                ((HeaderButtonListener)listeners[i+1]).buttonClicked(e);
-            }
-        }    
-    }
+	public HeaderPopup getPopup(final int modelIndex) {
+		return popups.get(modelIndex);
+	}
+
+	public void setModified(final int modelIndex, final boolean value) {
+		modified.put(modelIndex, value);
+	}
+
+	public void addButtonListener(final HeaderButtonListener l) {
+		listenerList.add(HeaderButtonListener.class, l);
+	}
+
+	protected void fireHeaderButtonClicked(final int modelIndex) {
+		Object[] listeners = listenerList.getListenerList();
+		HeaderPopupEvent e = null;
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == HeaderButtonListener.class) {
+				if (e == null) {
+					e = new HeaderPopupEvent(this, modelIndex);
+				}
+				((HeaderButtonListener) listeners[i + 1]).buttonClicked(e);
+			}
+		}
+	}
 }
